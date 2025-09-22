@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hasil Similaritas</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    /* Styling untuk konten dan sidebar */
+    .content {
+        margin-left: 250px; 
+        padding: 20px; 
+    }
+    .thead-dark { 
+        background-color: #343a40; 
+        color: #fff; 
+    }
+    .btn-custom { 
+        margin-top: 10px; 
+    }
+    .highlight-info { 
+        background-color: #ffeb3b; 
+    }
+    .highlight-success { 
+        background-color: #66bb6a; 
+    }
+    .highlight-info, .highlight-success {
+      color: white; 
+      padding: 2px 6px;
+    }
+    /* Sidebar */
+    .sidebar {
+        background-color: #f1f1f1;
+        width: 250px;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        padding-top: 20px;
+        box-shadow: 3px 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar .nav {
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+    }
+
+    .sidebar .nav-item {
+        padding: 10px 20px;
+    }
+
+    .sidebar .nav-item .nav-link {
+        color: #333;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .sidebar .nav-item .nav-link:hover {
+        background-color: #ddd;
+        color: #007bff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link text-dark active" href="/dashboard">Dashboard</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-dark active" href="/upload">Upload Dokumen</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-dark active" href="/history-user">Histori Dokumen</a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content">
+    <main role="main">
+      <div class="container mt-5">
+        <h1 class="text-center">Hasil Similaritas</h1>
+
+        <!-- Filter -->
+        <div class="filter-container d-flex justify-content-between mb-4">
+          <form method="get" action="/history-user" class="form-inline">
+            <input type="text" name="title" class="form-control mr-2" placeholder="Cari judul..." />
+            <input type="number" name="min_score" class="form-control mr-2" step="0.01" placeholder="Skor Min" />
+            <input type="number" name="max_score" class="form-control mr-2" step="0.01" placeholder="Skor Max" />
+            <button type="submit" class="btn btn-success">Filter</button>
+          </form>
+        </div>
+
+        <!-- Keterangan Highlight -->
+        <div class="alert alert-info">
+          <strong>Keterangan Highlight:</strong><br>
+          <span class="highlight-info">Dokumen 1</span> &nbsp;
+          <span class="highlight-success">Dokumen 2</span>
+        </div>
+
+          {% if similarities and similarities|length > 0 %}
+          <div class="alert alert-info">
+            <h5>Dokumen Anda dengan Highlight Semua Kemiripan</h5>
+            {% if highlighted_pdf %}
+              <p>Anda juga dapat melihat dokumen <strong>Exum asli</strong> dengan highlight kemiripan berikut:</p>
+              <a class="btn btn-warning" href="{{ url_for('serve_highlight_exum', user_id=session['user_id'], filename=highlighted_pdf) }}" target="_blank">
+                  Lihat Exum 
+              </a>
+            {% endif %}
+          </div>
+
+          <!-- Bagian Tabel -->
+          <h3 class="mt-4">Dokumen yang Relevan dengan Exum</h3>
+          <table class="table table-striped table-bordered">
+            <thead class="thead-dark">
+              <tr>
+                <th>No</th>
+                <th>Judul Skripsi</th>
+                <th>Skor Similarity</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for doc_id, title, score, exum, exum_combined, skripsi_highlight_path in similarities %}
+                <tr>
+                  <td>{{ loop.index }}</td>
+                  <td>{{ title }}</td>
+                  <td>{{ score | round(2) }}%</td>
+                  <td>
+                    {% if skripsi_highlight_path %}
+                      <a href="{{ url_for('serve_highlight_skripsi', user_id=session['user_id'], filename=skripsi_highlight_path) }}"
+                        target="_blank" class="btn btn-success">
+                        lihat
+                      </a>
+                      
+                    {% else %}
+                      <span class="text-muted">Tidak ada highlight</span>
+                    {% endif %}
+                  </td>
+
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+
+          <h4 class="mt-4">Total Similarity: {{ total_similarity | round(2) }}%</h4>
+        {% else %}
+          <div class="alert alert-warning mt-4">
+            <strong>Belum ada hasil similarity yang ditemukan.</strong>
+          </div>
+        {% endif %}
+      </div>
+    </main>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.24.1/feather.min.js"></script>
+  <script>feather.replace();</script>
+</body>
+</html>

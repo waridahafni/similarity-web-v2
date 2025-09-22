@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Dokumen</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="container mt-5">
+    <h2>Edit Judul Dokumen Skripsi</h2>
+    <form method="POST">
+      <div class="form-group">
+        <label for="title">Judul Dokumen</label>
+        <input type="text" class="form-control" id="title" name="title" value="{{ document[1] }}" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+      <a href="{{ url_for('admin_documents') }}" class="btn btn-secondary">Kembali</a>
+    </form>
+  </div>
+</body>
+</html>

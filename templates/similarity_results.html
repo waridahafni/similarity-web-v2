@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dokumen yang Di-upload</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, rgba(18, 172, 64, 0.9), rgba(255, 215, 0, 0.25));
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .sidebar {
+      width: 260px;
+      height: 100vh;
+      background: #fff;
+      border-radius: 20px;
+      margin: 20px;
+      padding: 20px 15px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      position: fixed;
+    }
+
+    .sidebar .brand {
+      font-weight: bold;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .sidebar .brand i {
+      font-size: 1.5rem;
+      margin-right: 10px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      color: #333;
+      padding: 10px 12px;
+      border-radius: 8px;
+      transition: 0.2s;
+      font-weight: 500;
+    }
+
+    .nav-link i {
+      margin-right: 10px;
+      font-size: 1.1rem;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      background-color: #f1f4f8;
+      color: #4b7bec;
+    }
+
+    .sidebar hr {
+      margin: 1.5rem 0;
+      border-top: 1px solid #ddd;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #888;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+      padding-left: 10px;
+    }
+
+    .bottom-buttons {
+      position: absolute;
+      bottom: 30px;
+      width: calc(100% - 30px);
+    }
+
+    .btn-docs,
+    .btn-upgrade {
+      width: 100%;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .btn-docs {
+      background: #2d3436;
+      color: #fff;
+    }
+
+    .btn-upgrade {
+      background: #5f27cd;
+      color: #fff;
+    }
+
+    .illustration {
+      width: 100%;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .illustration img {
+      width: 80px;
+    }
+
+    .illustration small {
+      color: #888;
+    }
+
+    .illustration h6 {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .jumbotron {
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      /* border-radius: 200px; */
+    }
+  </style>
+</head>
+<body>
+        <div class="d-flex">
+
+        <div class="sidebar">
+          <div class="brand">
+            <i class="fas fa-image"></i> Similarity Check
+          </div>
+          <a href="/dashboard" class="nav-link">
+            <span data-feather="home"></span> Dashboard
+          </a>
+          <a href="/upload" class="nav-link">
+            <span data-feather="upload"></span> Upload Dokumen
+          </a>
+          <a href="/history-user" class="nav-link active">
+            <span data-feather="list"></span> Histori Dokumen
+          </a>
+        </div>
+ 
+        </div>
+
+
+
+
+
+  <!-- Main Content -->
+
+      <!-- Main content -->
+      <div class="flex-grow-1 p-4" style="margin-left: 280px;">
+
+      <div class="container mt-5">
+
+          {% if similarities and similarities|length > 0 %}
+          <div class="alert alert-info">
+            
+            <h4 class="mt-4">Total Similarity: {{ total_similarity | round(2) }}%</h4>
+            {% if highlighted_pdf %}
+              <p>Anda juga dapat melihat dokumen <strong>Exum asli</strong> dengan highlight kemiripan berikut:</p>
+              <a class="btn btn-warning" href="{{ url_for('serve_highlight_exum', user_id=session['user_id'], filename=highlighted_pdf) }}" target="_blank">
+                  Lihat Exum 
+              </a>
+            {% endif %}
+          </div>
+
+          <!-- Bagian Tabel -->
+          <h3 class="mt-4">Dokumen yang Relevan dengan Exum</h3>
+          <table id="myTable" class="table table-striped table-bordered bg-white">
+            <thead class="thead-dark">
+              <tr>
+                <th>No</th>
+                <th>Judul Skripsi</th>
+                <th>Skor Similarity</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for doc_id, title, score, exum, exum_combined, skripsi_highlight_path in similarities %}
+                <tr>
+                  <td>{{ loop.index }}</td>
+                  <td>{{ title }}</td>
+                  <td>{{ score | round(2) }}%</td>
+                  <td>
+                    {% if skripsi_highlight_path %}
+                      <a href="{{ url_for('serve_highlight_skripsi', user_id=session['user_id'], filename=skripsi_highlight_path) }}"
+                        target="_blank" class="btn btn-success">
+                        lihat
+                      </a>
+                      
+                    {% else %}
+                      <span class="text-muted">Tidak ada highlight</span>
+                    {% endif %}
+                  </td>
+
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+
+          
+        {% else %}
+          <div class="alert alert-warning mt-4">
+            <strong>Belum ada hasil similarity yang ditemukan.</strong>
+          </div>
+        {% endif %}
+      </div>
+      </div>
+   
+
+
+
+
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.24.1/feather.min.js"></script>
+  
+
+  <!-- DataTables JS -->
+  <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+  
+  <script>
+    feather.replace();
+
+    $(document).ready(function() {
+      $('#myTable').DataTable();
+    });
+  </script>
+</body>
+</html>

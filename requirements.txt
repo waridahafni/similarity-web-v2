@@ -1,0 +1,12 @@
+flask
+gensim
+sastrawi
+python-docx 
+pdfplumber
+nltk
+werkzeug
+pymysql
+psycopg2
+PyPDF2
+spacy
+reportlab

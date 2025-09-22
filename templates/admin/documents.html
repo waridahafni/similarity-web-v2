@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dokumen yang Di-upload</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, rgba(18, 172, 64, 0.9), rgba(255, 215, 0, 0.25));
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .sidebar {
+      width: 260px;
+      height: 100vh;
+      background: #fff;
+      border-radius: 20px;
+      margin: 20px;
+      padding: 20px 15px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      position: fixed;
+    }
+
+    .sidebar .brand {
+      font-weight: bold;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .sidebar .brand i {
+      font-size: 1.5rem;
+      margin-right: 10px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      color: #333;
+      padding: 10px 12px;
+      border-radius: 8px;
+      transition: 0.2s;
+      font-weight: 500;
+    }
+
+    .nav-link i {
+      margin-right: 10px;
+      font-size: 1.1rem;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      background-color: #f1f4f8;
+      color: #4b7bec;
+    }
+
+    .sidebar hr {
+      margin: 1.5rem 0;
+      border-top: 1px solid #ddd;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #888;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+      padding-left: 10px;
+    }
+
+    .bottom-buttons {
+      position: absolute;
+      bottom: 30px;
+      width: calc(100% - 30px);
+    }
+
+    .btn-docs,
+    .btn-upgrade {
+      width: 100%;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .btn-docs {
+      background: #2d3436;
+      color: #fff;
+    }
+
+    .btn-upgrade {
+      background: #5f27cd;
+      color: #fff;
+    }
+
+    .illustration {
+      width: 100%;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .illustration img {
+      width: 80px;
+    }
+
+    .illustration small {
+      color: #888;
+    }
+
+    .illustration h6 {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .jumbotron {
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      /* border-radius: 200px; */
+    }
+
+          .upload-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+      }
+      .upload-container h1 {
+        text-align: center;
+      }
+      .upload-container form {
+        display: flex;
+        flex-direction: column;
+      }
+      .upload-container input[type="file"] {
+        margin-bottom: 20px;
+      }
+      .upload-container input[type="submit"] {
+        padding: 10px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .upload-container input[type="submit"]:hover {
+        background-color: #218838;
+      }
+  </style>
+
+    <style>
+    /* Memperbesar tombol di tabel */
+    #myTable .btn {
+        font-size: 16px; /* Ukuran font lebih besar */
+        padding: 10px 10px; /* Memberikan ruang di dalam tombol */
+        border-radius: 4px; /* Membuat sudut tombol lebih melengkung */
+    }
+
+    #myTable .btn-sm {
+        font-size: 16px; /* Ukuran font lebih besar untuk tombol kecil */
+        padding: 10px 10px; /* Memberikan ruang yang lebih besar */
+    }
+  </style>
+</head>
+<body>
+        <div class="d-flex">
+
+          <div class="sidebar">
+            <div class="brand">
+              <i class="fas fa-image"></i> Similarity Check
+            </div>
+
+            <a href="../home" class="nav-link active"><span data-feather="home"></span> Dashboard</a>
+            <a href="/admin/upload" class="nav-link"><span data-feather="upload"></span> Upload Dokumen</a>
+            <a href="/admin/documents" class="nav-link"><span data-feather="list"></span> Histori Dokumen</a>
+
+ 
+        </div>
+
+
+
+
+
+      <!-- Main content -->
+      <div class="flex-grow-1 p-4" style="margin-left: 280px;">
+
+
+        <div class="jumbotron p-4 rounded shadow" style="background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(6px);">
+          <h1 class="display-6">Dokumen Skripsi yang di-upload</h1>
+          <p class="lead">Upload file untuk memperkaya data</p>
+        </div>
+        
+
+  <main role="main" class="content">
+    <div class="container mt-5">
+      <!-- <h1 class="text-center mb-4">Dokumen Skripsi yang Di-upload</h1> -->
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <script>
+        // Hilangkan alert setelah 3 detik (3000 ms)
+        setTimeout(function () {
+          const alerts = document.querySelectorAll('.alert');
+          alerts.forEach(function(alert) {
+            alert.classList.remove('show');
+            alert.classList.add('fade');
+            setTimeout(() => alert.remove(), 500);  // hapus dari DOM setelah animasi
+          });
+        }, 3000);
+      </script>
+
+
+
+      <table class="table table-striped table-bordered bg-white" id="myTable">
+
+
+          <thead class="thead-dark text-center">
+            <tr>
+              <th style="width: 5%;">No</th>
+              <th style="width: 45%;">Judul Skripsi</th>
+              <th style="width: 20%;">Jenis Dokumen</th>
+              <th style="width: 20%;">Aksi</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for doc in documents %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td style="word-break: break-word;">{{ doc['title'] }}</td>
+              <td class="text-center">{{ doc['document_type'] or '-' }}</td>
+              <td class="btn-group-custom">
+                <a href="{{ url_for('view_admin_document', filename=doc['file_name']) }}" class="btn btn-info btn-sm">
+                  Lihat
+                </a>
+                <a href="{{ url_for('edit_document', doc_id=doc['id']) }}" class="btn btn-warning btn-sm">
+                  Edit
+                </a>
+                <a href="{{ url_for('admin_delete_document', doc_id=doc['id']) }}" class="btn btn-danger btn-sm"
+                  onclick="return confirm('Yakin ingin menghapus dokumen ini?')">
+                  Hapus
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+
+      </table>
+    </div>
+  </main>
+
+
+
+      </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.24.1/feather.min.js"></script>
+  
+
+  <!-- DataTables JS -->
+  <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+  
+  <script>
+    feather.replace();
+
+    $(document).ready(function() {
+      $('#myTable').DataTable();
+    });
+  </script>
+</body>
+</html>
