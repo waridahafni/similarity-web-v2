@@ -314,24 +314,27 @@ def login():
         user = cur.fetchone()
         cur.close()
         conn.close()
-        
-        if user and check_password_hash(user['password'], password):
-            session['user_id'] = user['id']
-            session['username'] = user['username']
-            session['role'] = user['role'].lower()
 
-            print("DEBUG: Role in session =", session['role'])
+        if user:
+            stored_password = user['password']
 
-            if user['role'].lower() == 'admin':
-                return redirect('/home')
-            else:
-                return redirect('/dashboard')
-        else:
-            return render_template('login.html', error='Invalid credentials')
-       
+            # 1️⃣ Jika password tersimpan sebagai hash (pbkdf2/scrypt/argon2 dll)
+            if stored_password.startswith("pbkdf2:") or stored_password.startswith("scrypt:"):
+                if check_password_hash(stored_password, password):
+                    session['username'] = user['username']
+                    session['role'] = user['role']
+                    session['user_id'] = user['id']
+                    return redirect(url_for('home' if user['role'] == 'admin' else 'dashboard'))
 
-    return render_template('login.html')
+            # 2️⃣ Jika password tersimpan plain text
+            elif stored_password == password:
+                session['username'] = user['username']
+                session['role'] = user['role']
+                session['user_id'] = user['id']
+                return redirect(url_for('home' if user['role'] == 'admin' else 'dashboard'))
 
+        flash("Username atau password salah", "danger")
+    return render_template("login.html")
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -339,7 +342,8 @@ def register():
         username = request.form['username']
         password = request.form['password']
         role = request.form['role']
-
+        
+        # Buat hash password
         hashed_password = generate_password_hash(password)
 
         conn = get_db_connection()
@@ -350,22 +354,24 @@ def register():
                 (username, hashed_password, role)
             )
             conn.commit()
-            return redirect('/login')
+            # Registrasi berhasil, alihkan ke login
+            flash('Registrasi berhasil! Silakan login.', 'success')
+            return redirect(url_for('login'))
         except psycopg2.IntegrityError:
             conn.rollback()
-            return render_template('register.html', error='Username sudah ada')
+            # Pengguna sudah ada
+            flash('Username sudah ada. Silakan gunakan nama lain.', 'danger')
+            return render_template('register.html')
         finally:
             cur.close()
             conn.close()
 
     return render_template('register.html')
 
-
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/login')
-
 
 @app.route('/dashboard')
 @role_required(['user'])
@@ -392,53 +398,59 @@ def home():
 
     # Statistik jumlah dokumen per user
     cur.execute("""
-        SELECT u.username, COUNT(h.id) 
+        SELECT u.username, COUNT(h.id) AS count
         FROM users u 
         LEFT JOIN history h ON u.id = h.user_id 
         GROUP BY u.username
     """)
     doc_stats = cur.fetchall()
 
-    # Top 5 skor similarity tertinggi
+    # Total users
+    cur.execute("SELECT COUNT(*) FROM users")
+    total_users = cur.fetchone()['count']
+
+    # Total documents
+    cur.execute("SELECT COUNT(*) FROM documents")
+    total_documents = cur.fetchone()['count']
+
+    # Upload hari ini
+    cur.execute("SELECT COUNT(*) FROM history WHERE DATE(created_at) = CURRENT_DATE")
+    today_uploads = cur.fetchone()['count']
+
+    # Aktivitas terbaru (5 terakhir)
     cur.execute("""
-        SELECT d.title, MAX(h.similarity_score)
-        FROM history h 
-        JOIN documents d ON h.document_id = d.id
-        GROUP BY d.title
-        ORDER BY MAX(h.similarity_score) DESC
+        SELECT u.username, h.uploaded_file_name AS file_name, h.created_at
+        FROM history h
+        JOIN users u ON u.id = h.user_id
+        ORDER BY h.created_at DESC
         LIMIT 5
     """)
-    top_docs = cur.fetchall()
+    recent_activities = cur.fetchall()
 
     cur.close()
     conn.close()
 
-    # Grafik jumlah dokumen
+    # Data untuk grafik
     usernames = [row['username'] for row in doc_stats]
     doc_counts = [row['count'] for row in doc_stats]
 
-    fig, ax = plt.subplots()
-    ax.bar(usernames, doc_counts)
-    ax.set_title("Jumlah Dokumen yang Diunggah per User")
-    ax.set_ylabel("Jumlah")
-
-    img = io.BytesIO()
-    plt.savefig(img, format='png')
-    img.seek(0)
-    chart_data = base64.b64encode(img.getvalue()).decode()
-
-    return render_template("home.html", 
-                       username=session['username'], 
-                       role=session['role'],
-                       chart_data=chart_data,
-                       top_docs=top_docs,
-                       active_page='dashboard')
+    return render_template(
+        "home.html",
+        username=session['username'],
+        role=session['role'],
+        total_users=total_users,
+        total_documents=total_documents,
+        today_uploads=today_uploads,
+        recent_activities=recent_activities,
+        usernames=usernames,
+        doc_counts=doc_counts,
+        active_page='dashboard'
+    )
 
 
 @app.route('/admin/upload', methods=['GET', 'POST'])
 def admin_upload():
     if 'role' not in session or session['role'] != 'admin':
-        
         return redirect('/login')
 
     if request.method == 'POST':
@@ -555,6 +567,77 @@ def user_documents():
     conn.close()
 
     return redirect(url_for('history_user_view', user_id=session['user_id']))
+
+# Halaman Kelola User
+@app.route('/manage_users')
+@role_required(['admin'])
+def manage_users():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("SELECT id, username, role FROM users ORDER BY id ASC")
+    users = cur.fetchall()
+    cur.close()
+    conn.close()
+    return render_template("manage_users.html", users=users, active_page='manage_users')
+
+# Tambah User
+@app.route('/add_user', methods=['GET', 'POST'])
+@role_required(['admin'])
+def add_user():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']  # hash kalau bisa
+        role = request.form['role']
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("INSERT INTO users (username, password, role) VALUES (%s, %s, %s)", 
+                    (username, password, role))
+        conn.commit()
+        cur.close()
+        conn.close()
+        flash("User berhasil ditambahkan!", "success")
+        return redirect(url_for('manage_users'))
+    return render_template("add_user.html", active_page='manage_users')
+
+# Edit User
+@app.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
+@role_required(['admin'])
+def edit_user(user_id):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    if request.method == 'POST':
+        username = request.form['username']
+        role = request.form['role']
+        cur.execute("UPDATE users SET username=%s, role=%s WHERE id=%s", 
+                    (username, role, user_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        flash("User berhasil diperbarui!", "success")
+        return redirect(url_for('manage_users'))
+
+    cur.execute("SELECT * FROM users WHERE id=%s", (user_id,))
+    user = cur.fetchone()
+    cur.close()
+    conn.close()
+    return render_template("edit_user.html", user=user, active_page='manage_users')
+
+# Hapus User
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+@role_required(['admin'])
+def delete_user(user_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    flash("User berhasil dihapus!", "success")
+    return redirect(url_for('manage_users'))
+
+
 
 @app.route('/hasil')
 def hasil():
@@ -959,7 +1042,6 @@ def create_highlighted_pdf(original_text, similar_tokens, output_path, user_id=N
     processed_dir = os.path.join('processed_texts')
     os.makedirs(processed_dir, exist_ok=True)
 
-    # Nama file json: bisa pakai hint atau hash sederhana
     json_filename = f"{filename_hint or 'result'}_highlight.json"
     json_path = os.path.join(processed_dir, json_filename)
 

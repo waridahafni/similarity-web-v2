@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kelola User</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, rgba(18, 172, 64, 0.9), rgba(255, 215, 0, 0.25));
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .sidebar {
+      width: 260px;
+      height: 100vh;
+      background: #fff;
+      border-radius: 20px;
+      margin: 20px;
+      padding: 20px 15px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      position: fixed;
+    }
+
+    .sidebar .brand {
+      font-weight: bold;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .sidebar .brand i {
+      font-size: 1.5rem;
+      margin-right: 10px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      color: #333;
+      padding: 10px 12px;
+      border-radius: 8px;
+      transition: 0.2s;
+      font-weight: 500;
+    }
+
+    .nav-link svg {
+      margin-right: 10px; /* jarak ikon ke teks */
+      font-size: 1.1rem;
+    }
+
+
+
+
+    .nav-link:hover,
+    .nav-link.active {
+      background-color: #f1f4f8;
+      color: #4b7bec;
+    }
+
+    .sidebar hr {
+      margin: 1.5rem 0;
+      border-top: 1px solid #ddd;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #888;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+      padding-left: 10px;
+    }
+
+    .bottom-buttons {
+      position: absolute;
+      bottom: 30px;
+      width: calc(100% - 30px);
+    }
+
+    .btn-docs,
+    .btn-upgrade {
+      width: 100%;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .btn-docs {
+      background: #2d3436;
+      color: #fff;
+    }
+
+    .btn-upgrade {
+      background: #5f27cd;
+      color: #fff;
+    }
+
+    .card {
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+      background: white;
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="d-flex">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+    <div class="brand">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" style="width: 40px; height: 40px; margin-right: 10px;">
+      Similarity Check
+    </div>
+
+      <a href="{{ url_for('home') }}" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+        <span data-feather="home"></span> Dashboard
+      </a>
+      <a href="{{ url_for('admin_upload') }}" class="nav-link {% if active_page == 'upload' %}active{% endif %}">
+        <span data-feather="upload"></span> Upload Dokumen
+      </a>
+      <a href="{{ url_for('admin_documents') }}" class="nav-link {% if active_page == 'documents' %}active{% endif %}">
+        <span data-feather="list"></span> Daftar Dokumen
+      </a>
+      <a href="{{ url_for('manage_users') }}" class="nav-link {% if active_page == 'manage_users' %}active{% endif %}">
+        <span data-feather="users"></span> Kelola Users
+      </a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-grow-1 p-4" style="margin-left: 280px;">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Kelola Users</span>
+          <div>
+            <a href="{{ url_for('add_user') }}" class="btn btn-success btn-sm mr-2">
+              + Tambah User
+            </a>
+            <a href="/logout" class="btn btn-danger btn-sm">Logout</a>
+          </div>
+        </div>
+        <div class="card-body">
+          <table class="table table-bordered">
+            <thead class="thead-light">
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in users %}
+              <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.role }}</td>
+                <td>
+                  <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                  <form action="{{ url_for('delete_user', user_id=user.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Yakin hapus user ini?');">
+                      Hapus
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="4" class="text-center text-muted">Belum ada user.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.24.1/feather.min.js"></script>
+  <script> feather.replace(); </script>
+</body>
+</html>

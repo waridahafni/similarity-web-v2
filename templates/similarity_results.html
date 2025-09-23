@@ -129,18 +129,18 @@
           <div class="brand">
             <i class="fas fa-image"></i> Similarity Check
           </div>
-          <a href="/dashboard" class="nav-link">
-            <span data-feather="home"></span> Dashboard
+          <a href="/dashboard" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+              <span data-feather="home"></span> Dashboard
           </a>
-          <a href="/upload" class="nav-link">
-            <span data-feather="upload"></span> Upload Dokumen
+          <a href="/upload" class="nav-link {% if active_page == 'upload' %}active{% endif %}">
+              <span data-feather="upload"></span> Upload Dokumen
           </a>
-          <a href="/history-user" class="nav-link active">
-            <span data-feather="list"></span> Histori Dokumen
+          <a href="/history-user" class="nav-link {% if active_page == 'history' %}active{% endif %}">
+              <span data-feather="list"></span> Histori Dokumen
           </a>
         </div>
  
-        </div>
+      </div>
 
 
 

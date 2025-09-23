@@ -50,10 +50,11 @@
       font-weight: 500;
     }
 
-    .nav-link i {
-      margin-right: 10px;
+    .nav-link svg {
+      margin-right: 10px; /* jarak ikon ke teks */
       font-size: 1.1rem;
     }
+
 
     .nav-link:hover,
     .nav-link.active {
@@ -155,16 +156,28 @@
 <body>
         <div class="d-flex">
 
-          <div class="sidebar">
-            <div class="brand">
-              <i class="fas fa-image"></i> Similarity Check
-            </div>
+        <!-- Sidebar -->
+        <div class="sidebar">
+          <div class="brand">
+              <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" style="width: 40px; height: 40px; margin-right: 10px;">
+              Similarity Check
+          </div>
 
-            <a href="../home" class="nav-link active"><span data-feather="home"></span> Dashboard</a>
-            <a href="/admin/upload" class="nav-link"><span data-feather="upload"></span> Upload Dokumen</a>
-            <a href="/admin/documents" class="nav-link"><span data-feather="list"></span> Histori Dokumen</a>
+          <a href="{{ url_for('home') }}" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+            Dashboard
+          </a>
+          <a href="{{ url_for('admin_upload') }}" class="nav-link {% if active_page == 'upload' %}active{% endif %}">
+            Upload Dokumen
+          </a>
+          <a href="{{ url_for('admin_documents') }}" class="nav-link {% if active_page == 'documents' %}active{% endif %}">
+            Daftar Dokumen
+          </a>
+          <a href="{{ url_for('manage_users') }}" class="nav-link {% if active_page == 'manage_users' %}active{% endif %}">
+            Kelola User
+          </a>
+        </div>
 
- 
+
         </div>
 
 

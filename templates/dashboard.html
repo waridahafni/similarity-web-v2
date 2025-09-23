@@ -50,10 +50,11 @@
       font-weight: 500;
     }
 
-    .nav-link i {
-      margin-right: 10px;
+    .nav-link svg {
+      margin-right: 10px; /* jarak ikon ke teks */
       font-size: 1.1rem;
     }
+
 
     .nav-link:hover,
     .nav-link.active {
@@ -154,20 +155,78 @@
 <body>
         <div class="d-flex">
 
-        <div class="sidebar">
+
+
+      <div class="sidebar">
+        <!-- Brand -->
           <div class="brand">
-            <i class="fas fa-image"></i> Similarity Check
+              <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" style="width: 40px; height: 40px; margin-right: 10px;">
+              Similarity Check
           </div>
-          <a href="/dashboard" class="nav-link">
-            <span data-feather="home"></span> Dashboard
-          </a>
-          <a href="/upload" class="nav-link">
-            <span data-feather="upload"></span> Upload Dokumen
-          </a>
-          <a href="/history-user" class="nav-link active">
-            <span data-feather="list"></span> Histori Dokumen
-          </a>
-        </div>
+        <!-- Menu -->
+        <a href="/dashboard" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+          <span data-feather="home" class="icon"></span> Dashboard
+        </a>
+
+        <a href="/upload" class="nav-link {% if active_page == 'upload' %}active{% endif %}">
+          <span data-feather="upload" class="icon"></span> Upload Dokumen
+        </a>
+
+        <a href="/history-user" class="nav-link {% if active_page == 'history' %}active{% endif %}">
+          <span data-feather="list" class="icon"></span> Histori Dokumen
+        </a>
+      </div>
+
+      <!-- Feather Icons Script -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.24.1/feather.min.js"></script>
+      <script>
+        feather.replace();
+      </script>
+
+      <!-- Optional CSS -->
+      <style>
+      .sidebar {
+        width: 260px;
+        height: 100vh;
+        background: #fff;
+        border-radius: 20px;
+        padding: 20px 15px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        position: fixed;
+      }
+
+      .brand {
+        font-weight: bold;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .nav-link {
+        display: flex;
+        align-items: center;
+        color: #333;
+        padding: 10px 12px;
+        border-radius: 8px;
+        transition: 0.2s;
+        font-weight: 500;
+        text-decoration: none;
+      }
+
+      .nav-link:hover,
+      .nav-link.active {
+        background-color: #f1f4f8;
+        color: #4b7bec;
+      }
+
+      .nav-link .icon {
+        margin-right: 12px; /* jarak ikon ke teks */
+        font-size: 1.1rem;
+      }
+      </style>
+
+
  
         </div>
 

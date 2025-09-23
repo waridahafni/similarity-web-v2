@@ -81,25 +81,20 @@
 </head>
 <body>
 
-  <nav class="sidebar">
-    <ul class="nav flex-column">
-      <li class="nav-item">
-        <a class="nav-link" href="../home">
-          <span data-feather="home"></span> Dashboard
+    <div class="sidebar">
+        <div class="brand">
+            <i class="fas fa-image"></i> Similarity Check
+        </div>
+        <a href="{{ url_for('home') }}" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+            <span data-feather="home"></span> Dashboard
         </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/admin/upload">
-          <span data-feather="upload"></span> Upload Dokumen
+        <a href="{{ url_for('admin_upload') }}" class="nav-link {% if active_page == 'upload' %}active{% endif %}">
+            <span data-feather="upload"></span> Upload Dokumen
         </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/admin/documents">
-          <span data-feather="list"></span> Daftar Dokumen
+        <a href="{{ url_for('admin_documents') }}" class="nav-link {% if active_page == 'documents' %}active{% endif %}">
+            <span data-feather="list"></span> Daftar Dokumen
         </a>
-      </li>
-    </ul>
-  </nav>
+    </div>
 
   <main class="content">
     <div class="container-fluid">
