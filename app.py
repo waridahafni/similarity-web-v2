@@ -372,17 +372,61 @@ def register():
 def logout():
     session.clear()
     return redirect('/login')
-
 @app.route('/dashboard')
 @role_required(['user'])
 def dashboard():
-    if 'username' not in session:
+    user_id = session.get('user_id')
+
+    if not user_id:
         return redirect('/login')
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    # 1. Ambil jumlah total dokumen pengguna
+    cur.execute("SELECT COUNT(id) AS total FROM history WHERE user_id = %s", (user_id,))
+    total_documents = cur.fetchone()['total']
+
+    # 2. Ambil skor rata-rata
+    cur.execute("SELECT AVG(similarity_score) AS avg_score FROM history WHERE user_id = %s", (user_id,))
+    avg_score_raw = cur.fetchone()['avg_score']
+    avg_score = round(avg_score_raw, 2) if avg_score_raw is not None else 0.0
+
+    # 3. Ambil dokumen terakhir yang diunggah
+    cur.execute("""
+        SELECT uploaded_file_name, similarity_score
+        FROM history
+        WHERE user_id = %s
+        ORDER BY created_at DESC
+        LIMIT 1
+    """, (user_id,))
+    last_doc = cur.fetchone()
+    last_doc_name = last_doc['uploaded_file_name'] if last_doc else 'N/A'
+    last_doc_score = round(last_doc['similarity_score'], 2) if last_doc and last_doc['similarity_score'] is not None else 'N/A'
+
+    # 4. Ambil 5 riwayat terbaru untuk tabel
+    cur.execute("""
+        SELECT id, uploaded_file_name, similarity_score, created_at
+        FROM history
+        WHERE user_id = %s
+        ORDER BY created_at DESC
+        LIMIT 5
+    """, (user_id,))
+    recent_history = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
     return render_template(
         'dashboard.html',
         username=session['username'],
         role=session['role'],
-        active_page='dashboard'   # ✅
+        active_page='dashboard',
+        total_documents=total_documents,
+        avg_score=avg_score,
+        last_document_name=last_doc_name,
+        last_document_score=last_doc_score,
+        recent_history=recent_history
     )
 
 
