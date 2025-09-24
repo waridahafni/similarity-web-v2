@@ -44,10 +44,9 @@
     }
 
     .nav-link svg {
-    margin-right: 10px; /* jarak ikon ke teks */
-    font-size: 1.1rem;
+      margin-right: 10px;
+      font-size: 1.1rem;
     }
-
 
     .nav-link:hover,
     .nav-link.active {
@@ -87,33 +86,50 @@
       </a>
     </div>
 
-  <!-- Main Content -->
-  <div class="flex-grow-1 p-4" style="margin-left:280px;">
-    <div class="card">
-      <div class="card-header">Tambah User</div>
-      <div class="card-body">
-        <form method="POST">
-          <div class="form-group">
-            <label>Username</label>
-            <input type="text" name="username" class="form-control" required>
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" name="password" class="form-control" required>
-          </div>
-          <div class="form-group">
-            <label>Role</label>
-            <select name="role" class="form-control">
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-success">Simpan</button>
-          <a href="{{ url_for('manage_users') }}" class="btn btn-secondary">Kembali</a>
-        </form>
+    <!-- Main Content -->
+    <div class="flex-grow-1 p-4" style="margin-left:280px;">
+      <div class="card">
+        <div class="card-header">Tambah User</div>
+        <div class="card-body">
+
+          <!-- Alerts -->
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+
+          <!-- Form Tambah User -->
+          <form method="POST">
+            <div class="form-group">
+              <label>Username</label>
+              <input type="text" name="username" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" name="password" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Role</label>
+              <select name="role" class="form-control">
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-success">Simpan</button>
+            <a href="{{ url_for('manage_users') }}" class="btn btn-secondary">Kembali</a>
+          </form>
+
+        </div>
       </div>
     </div>
-  </div>
 
 </div>
 
@@ -122,5 +138,20 @@
 <script>
   feather.replace();
 </script>
+
+<!-- Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Auto-hide alert setelah 3 detik -->
+<script>
+  window.setTimeout(function() {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+      $(alert).fadeOut('slow');
+    });
+  }, 3000);
+</script>
+
 </body>
 </html>

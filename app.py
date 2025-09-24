@@ -298,9 +298,8 @@ def get_file_path_by_history_id(history_id):
 
 
 @app.route('/')
-def index():
-    return redirect(url_for('login'))
-
+def landing_page():
+    return render_template('landing_page.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -334,7 +333,7 @@ def login():
                 return redirect(url_for('home' if user['role'] == 'admin' else 'dashboard'))
 
         flash("Username atau password salah", "danger")
-    return render_template("login.html")
+    return render_template("landing_page.html")
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -361,12 +360,12 @@ def register():
             conn.rollback()
             # Pengguna sudah ada
             flash('Username sudah ada. Silakan gunakan nama lain.', 'danger')
-            return render_template('register.html')
+            return render_template('landing_page')
         finally:
             cur.close()
             conn.close()
 
-    return render_template('register.html')
+    return render_template('landing_page')
 
 @app.route('/logout')
 def logout():
@@ -624,24 +623,34 @@ def manage_users():
     conn.close()
     return render_template("manage_users.html", users=users, active_page='manage_users')
 
-# Tambah User
 @app.route('/add_user', methods=['GET', 'POST'])
 @role_required(['admin'])
 def add_user():
     if request.method == 'POST':
         username = request.form['username']
-        password = request.form['password']  # hash kalau bisa
+        password = request.form['password']
         role = request.form['role']
 
+        hashed_password = generate_password_hash(password)
+
         conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("INSERT INTO users (username, password, role) VALUES (%s, %s, %s)", 
-                    (username, password, role))
-        conn.commit()
-        cur.close()
-        conn.close()
-        flash("User berhasil ditambahkan!", "success")
-        return redirect(url_for('manage_users'))
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        try:
+            cur.execute(
+                "INSERT INTO users (username, password, role) VALUES (%s, %s, %s)",
+                (username, hashed_password, role)
+            )
+            conn.commit()
+            flash("User berhasil ditambahkan!", "success")  # alert hijau
+            return redirect(url_for('manage_users'))  # redirect ke daftar user
+        except psycopg2.errors.UniqueViolation:
+            conn.rollback()
+            flash('Username sudah ada. Silakan gunakan nama lain.', 'danger')  # alert merah
+            return redirect(url_for('add_user'))  # kembali ke form
+        finally:
+            cur.close()
+            conn.close()
+
     return render_template("add_user.html", active_page='manage_users')
 
 # Edit User
